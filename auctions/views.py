@@ -91,6 +91,28 @@ def add_watchlist(request,id):
     return HttpResponseRedirect(reverse("listing",args=(id, )))
 
 
+def add_bid(request, id):
+    new_bid = int(request.POST['new_bid'])
+    listing_data = Listing.objects.get(pk=id)
+    if new_bid > listing_data.price.bid:
+        update_bid = Bid(user=request.user, bid=new_bid)
+        update_bid.save()
+        listing_data.price = update_bid
+        listing_data.save()
+
+        return render(request, 'auctions/listings.html', {
+            'listing': listing_data,
+            'message': 'Bid was updated succesfuly',
+            'updated': True
+        })
+    else:
+         return render(request, 'auctions/listings.html', {
+            'listing': listing_data,
+            'message': 'Bid was not updated succesfuly',
+            'updated': False
+        })
+
+
 
 def display_category(request):
     if request.method == 'POST':
@@ -142,10 +164,12 @@ def listing(request,id):
     listing_data = Listing.objects.get(pk=id)
     is_listing_in_watchlist = request.user in listing_data.watch_list.all()
     all_comments = Comment.objects.filter(listing=listing_data)
+    is_owner = request.user.username == listing_data.owner.username
     return render(request, 'auctions/listings.html',{
         'listing':listing_data,
         'is_listing_in_watchlist':is_listing_in_watchlist,
-        'all_comments': all_comments
+        'all_comments': all_comments,
+        'is_owner': is_owner
     })
 
 
@@ -163,3 +187,19 @@ def add_comment(request,id):
     new_comment.save()
 
     return HttpResponseRedirect(reverse('listing', args=(id, )))
+
+
+def close_auction(request,id):
+    listing_data = Listing.objects.get(pk=id)
+    listing_data.is_active = False
+    listing_data.save()
+    is_listing_in_watchlist = request.user in listing_data.watch_list.all()
+    all_comments = Comment.objects.filter(listing=listing_data)
+    is_owner = request.user.username == listing_data.owner.username
+    
+    return render(request, 'auctions/listings.html',{
+        'listing':listing_data,
+        'is_listing_in_watchlist':is_listing_in_watchlist,
+        'all_comments': all_comments,
+        'is_owner': is_owner
+    })

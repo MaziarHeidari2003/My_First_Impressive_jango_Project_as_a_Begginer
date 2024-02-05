@@ -1,22 +1,48 @@
 {% extends 'auctions/layout.html' %}
 
 {% block body %}
-  <div class="row">
 
-      {% if user.is_authenticated %}
-      {% if is_listing_in_watchlist %}
-        <form action="{% url 'remove_watchlist' id=listing.id %}" method="POST">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-danger">Remove</button>
-        </form>
-      {% else %}  
-
-        <form action="{% url 'add_watchlist' id=listing.id %}" method="POST">
-          {% csrf_token %}
-          <button type="submit" class="btn btn-success">Add</button>
-      </form>
+<div class="container">
+    {% if message %}
+      {% if updated %}
+        <div class="alert alert-success" role="alert">
+          {{message}}
+        </div>
+      {% else %}
+        <div class="alert alert-danger" role="alert">
+          {{message}}
+        </div>
 
       {% endif %}
+    {% endif %}
+</div>
+
+
+
+
+  <div class="row">
+      {% if user.is_authenticated %}
+        {% if user.is_owner %}
+          <form action="{% url 'close_auction' id=listing.id %}" method="POST">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Close</button>
+          </form>
+        {% endif %}
+
+          
+        {% if is_listing_in_watchlist %}
+          <form action="{% url 'remove_watchlist' id=listing.id %}" method="POST">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-danger">Remove</button>
+          </form>
+        {% else %}  
+
+          <form action="{% url 'add_watchlist' id=listing.id %}" method="POST">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-success">Add</button>
+        </form>
+
+        {% endif %}
     {% endif %}
 
   </div>
@@ -27,7 +53,21 @@
 <h2>Player name: {{listing.title}}</h2>
 <p>description: {{listing.description}}</p>
 <img src="{{listing.image_url}}">
-<h6>price: {{listing.price}}</h6>
+<h6>initial price: {{listing.price.bid}}</h6>
+{% if user.is_authenticated %}
+
+<form action="{% url 'add_bid' id=listing.id %}" method="POST">
+  {% csrf_token %}
+    <div class="form-group">
+      <label for="new_bid">Add Bid</label>
+      <input type="number" min="0" name="new_bid" placeholder="Add New Bid">
+      <button type="submit" class="btn btn-warning">Add</button>
+    </div>
+      
+
+</form>
+
+{% endif %}
 
     <h2>Comments</h2>
     {% if user.is_authenticated %}
