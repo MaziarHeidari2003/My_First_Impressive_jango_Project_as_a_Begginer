@@ -1,0 +1,59 @@
+{% extends 'auctions/layout.html' %}
+
+{% block body %}
+  <div class="row">
+
+      {% if user.is_authenticated %}
+      {% if is_listing_in_watchlist %}
+        <form action="{% url 'remove_watchlist' id=listing.id %}" method="POST">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Remove</button>
+        </form>
+      {% else %}  
+
+        <form action="{% url 'add_watchlist' id=listing.id %}" method="POST">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-success">Add</button>
+      </form>
+
+      {% endif %}
+    {% endif %}
+
+  </div>
+
+
+
+
+<h2>Player name: {{listing.title}}</h2>
+<p>description: {{listing.description}}</p>
+<img src="{{listing.image_url}}">
+<h6>price: {{listing.price}}</h6>
+
+    <h2>Comments</h2>
+    {% if user.is_authenticated %}
+      <form action="{% url 'add_comment' id=listing.id %}" method="POST">
+          {% csrf_token %}
+          <div class="form-group">
+            <label for="new_comment">Add Comment</label>
+            <input type="text" name="new_comment" placeholder="Add New Comment">
+            <button type="submit" class="btn btn-warning">Add</button>
+          </div>
+            
+
+      </form>
+    {% endif %}
+
+    <br>
+
+    <ul class="list-group">
+      {% for comment in all_comments %}
+        <li class="list-group-item">
+          {{comment.message}}
+          <br>
+          <p>Posted by: {{comment.author}}</p>
+        </li>
+      {% endfor %}
+      
+    </ul>
+
+{% endblock %}
